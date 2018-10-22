@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.PlatformAbstractions;
 using Serilog;
@@ -20,7 +21,6 @@ namespace Lykke.Logs.Serilog
     public class LogToFile : ILog
     {
         private readonly Logger _logger;
-        private readonly string _logName;
 
         public LogToFile(IConfiguration configuration, string logName = null)
         {
@@ -29,27 +29,13 @@ namespace Lykke.Logs.Serilog
             var version = assembly.Attribute<AssemblyInformationalVersionAttribute>(attribute => attribute.InformationalVersion);
             var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             
-//            var configKeyValuePairs = serilogSettings.ToKeyValuePairs()
-//                .Append(new KeyValuePair<string, string>("Application", title))
-//                .Append(new KeyValuePair<string, string>("Version", version))
-//                .Append(new KeyValuePair<string, string>("Environment", environmentName));
-//            
-//            var loggerConfig = new LoggerConfiguration()
-//                .ReadFrom.KeyValuePairs(configKeyValuePairs);
-//            if (logToConsole)
-//            {
-//                loggerConfig.WriteTo.Console();
-//            }
-//            _logger = loggerConfig
-//                .CreateLogger();
             _logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
                 .Enrich.WithProperty("Application", title)
                 .Enrich.WithProperty("Version", version)
                 .Enrich.WithProperty("Environment", environmentName)
+                .Enrich.WithProperty("LogName", logName ?? $"{title}Log")
                 .CreateLogger();
-
-            _logName = logName ?? $"{title}Log";
         }
 
         private Task WriteLog(LogEventLevel level, string component, string process, string context, string info, 
@@ -59,8 +45,8 @@ namespace Lykke.Logs.Serilog
             Task.Run(async () =>
 #pragma warning restore 1998
             {
-                //var time = dateTime ?? DateTime.UtcNow;
-                //var message = $"{time:yyyy-MM-dd HH:mm:ss:fff} [{level}] {component}:{process}:{context} - {info}";
+                var time = dateTime ?? DateTime.UtcNow;
+                var message = $"{time:yyyy-MM-dd HH:mm:ss:fff} [{level}] {component}:{process}:{context} - {info}";
                 
                 _logger.Write(level, ex, message);
             });
