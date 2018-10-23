@@ -27,7 +27,8 @@ namespace Lykke.Logs.Serilog
         /// <param name="configuration"></param>
         /// <param name="substitutions"></param>
         /// <returns></returns>
-        public static IConfigurationRoot WithSubstitutions(this IConfigurationRoot configuration, Dictionary<string, string> substitutions)
+        public static IConfiguration WithSubstitutions(this IConfiguration configuration, 
+            params (string Key, string Value)[] substitutions)
         {
             foreach (var substitution in substitutions)
             {
