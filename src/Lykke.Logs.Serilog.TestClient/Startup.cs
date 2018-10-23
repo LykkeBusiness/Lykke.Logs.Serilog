@@ -25,7 +25,7 @@ namespace Lykke.Logs.Serilog.TestClient
                 .AddEnvironmentVariables()
                 .Build();
             
-            Configuration = Configuration.WithSubstitutions(new Dictionary<string, string> {{"{LogName}", "testLogReplaced"}});
+            Configuration = (IConfigurationRoot)Configuration.WithSubstitutions(("{LogName}", "testLogReplaced"));
 
             Environment = env;
         }
@@ -45,7 +45,7 @@ namespace Lykke.Logs.Serilog.TestClient
                 app.UseDeveloperExceptionPage();
             }
 
-            var logger = new LogToFile(GetType().Assembly, Configuration, "testLog");
+            var logger = new LogToFile(GetType().Assembly, Configuration);
 
             app.Run(async (context) =>
             {
