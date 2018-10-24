@@ -17,4 +17,10 @@
       <ProjectReference Include="..\Lykke.Logs.Serilog\Lykke.Logs.Serilog.csproj" />
     </ItemGroup>
 
+    <Target Name="CopySerilogConfig" AfterTargets="AfterBuild">
+        <Copy SourceFiles="appsettings.Serilog.json" DestinationFolder="$(OutDir)" />
+    </Target>
+    <Target Name="CopySerilogConfigOnPublish" AfterTargets="Publish">
+        <Copy SourceFiles="appsettings.Serilog.json" DestinationFolder="$(PublishDir)" />
+    </Target>
 </Project>

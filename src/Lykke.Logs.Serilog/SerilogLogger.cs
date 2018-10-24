@@ -17,11 +17,11 @@ namespace Lykke.Logs.Serilog
     /// Serilog must be configured with appsettings.Serilog.json.
     /// </summary>
     [UsedImplicitly]
-    public class LogToFile : ILog
+    public class SerilogLogger : ILog
     {
         private readonly Logger _logger;
 
-        public LogToFile(Assembly assembly, IConfiguration configuration)
+        public SerilogLogger(Assembly assembly, IConfiguration configuration)
         {
             var title = assembly.Attribute<AssemblyTitleAttribute>(attribute => attribute.Title);
             var version = assembly.Attribute<AssemblyInformationalVersionAttribute>(attribute => attribute.InformationalVersion);
