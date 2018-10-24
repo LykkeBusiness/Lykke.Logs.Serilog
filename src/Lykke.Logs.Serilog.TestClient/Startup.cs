@@ -37,7 +37,7 @@ namespace Lykke.Logs.Serilog.TestClient
                 app.UseDeveloperExceptionPage();
             }
 
-            var logger = new LogToFile(GetType().Assembly, Configuration);
+            var logger = new SerilogLogger(GetType().Assembly, Configuration);
 
             app.Run(async (context) =>
             {
