@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="wwwroot\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Lykke.Logs.Serilog\Lykke.Logs.Serilog.csproj" />
+    </ItemGroup>
+
+    <Target Name="CopySerilogConfig" AfterTargets="AfterBuild">
+        <Copy SourceFiles="appsettings.Serilog.json" DestinationFolder="$(OutDir)" />
+    </Target>
+    <Target Name="CopySerilogConfigOnPublish" AfterTargets="Publish">
+        <Copy SourceFiles="appsettings.Serilog.json" DestinationFolder="$(PublishDir)" />
+    </Target>
+</Project>
