@@ -20,6 +20,8 @@ namespace Lykke.Logs.Serilog
     public class SerilogLogger : ILog
     {
         private readonly Logger _logger;
+        private readonly bool _concurrentWriteMode = 
+            !bool.TryParse(Environment.GetEnvironmentVariable("SERILOG_SINGLE_THREAD_MODE"), out var cwm) || cwm;
 
         public SerilogLogger(Assembly assembly, IConfiguration configuration)
         {
@@ -41,20 +43,28 @@ namespace Lykke.Logs.Serilog
         private Task WriteLog(LogEventLevel level, string component, string process, string context, string info, 
             Exception ex = null, DateTime? dateTime = null)
         {
-#pragma warning disable 1998
-            Task.Run(async () =>
-#pragma warning restore 1998
+            void Write()
             {
                 using (LogContext.Push(
                     new PropertyEnricher("Component", component), 
-                    new PropertyEnricher("Process", process),
-                    new PropertyEnricher("Context", context)
-                    ))
+                    new PropertyEnricher("Process", process), 
+                    new PropertyEnricher("Context", context)))
                 {
                     _logger.Write(level, ex, info);
                 }
-            });
+            }
 
+            if (_concurrentWriteMode)
+            {
+#pragma warning disable 1998
+                Task.Run(async () => Write());
+#pragma warning restore 1998
+            }
+            else
+            {
+                Write();
+            }
+            
             return Task.CompletedTask;
         }
         
@@ -81,13 +91,13 @@ namespace Lykke.Logs.Serilog
 
         public async Task WriteErrorAsync(string component, string process, string context, Exception exception, DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Error, component, process, context, null, exception, dateTime);
+            await WriteLog(LogEventLevel.Error, component, process, context, exception.Message, exception, dateTime);
         }
 
         public async Task WriteFatalErrorAsync(string component, string process, string context, Exception exception,
             DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Fatal, component, process, context, null, exception, dateTime);
+            await WriteLog(LogEventLevel.Fatal, component, process, context, exception.Message, exception, dateTime);
         }
 
         public async Task WriteInfoAsync(string process, string context, string info, DateTime? dateTime = null)
@@ -112,12 +122,12 @@ namespace Lykke.Logs.Serilog
 
         public async Task WriteErrorAsync(string process, string context, Exception exception, DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Error, string.Empty, process, context, null, exception, dateTime);
+            await WriteLog(LogEventLevel.Error, string.Empty, process, context, exception.Message, exception, dateTime);
         }
 
         public async Task WriteFatalErrorAsync(string process, string context, Exception exception, DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Fatal, string.Empty, process, context, null, exception, dateTime);
+            await WriteLog(LogEventLevel.Fatal, string.Empty, process, context, exception.Message, exception, dateTime);
         }
     }
 }
