@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Common;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Context;
@@ -20,6 +21,7 @@ namespace Lykke.Logs.Serilog
     public class SerilogLogger : ILog
     {
         private readonly Logger _logger;
+        private readonly ThreadSwitcherToNewTask _threadSwitcher;
         private readonly bool _concurrentWriteMode = 
             !bool.TryParse(Environment.GetEnvironmentVariable("SERILOG_SINGLE_THREAD_MODE"), out var cwm) || cwm;
 
@@ -36,6 +38,8 @@ namespace Lykke.Logs.Serilog
                 .Enrich.WithProperty("Environment", environmentName)
                 .Enrich.FromLogContext()
                 .CreateLogger();
+
+            _threadSwitcher = new ThreadSwitcherToNewTask(new LogToConsole());
 
             WriteLog(LogEventLevel.Information, title, version, environmentName, "Started logging.");
         }
@@ -56,9 +60,11 @@ namespace Lykke.Logs.Serilog
 
             if (_concurrentWriteMode)
             {
-#pragma warning disable 1998
-                Task.Run(async () => Write());
-#pragma warning restore 1998
+                _threadSwitcher.SwitchThread(() =>
+                {
+                    Write();
+                    return Task.CompletedTask;
+                });
             }
             else
             {
