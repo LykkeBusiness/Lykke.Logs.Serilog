@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using Common;
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Common;
+using Lykke.Common.Log;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Context;
 using Serilog.Core;
@@ -17,6 +20,7 @@ namespace Lykke.Logs.Serilog
     /// ILog wrapper to write to files. Hides Serilog implementation behind.
     /// Serilog must be configured with appsettings.Serilog.json.
     /// </summary>
+    //TODO: to refactor and use new logs mechanism
     [UsedImplicitly]
     public class SerilogLogger : ILog
     {
@@ -73,7 +77,57 @@ namespace Lykke.Logs.Serilog
             
             return Task.CompletedTask;
         }
-        
+
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) where TState : LogEntryParameters
+        {
+            WriteLog(Map(logLevel), "", "", state.ToJson(), formatter(state, exception), exception);
+        }
+
+        private LogEventLevel Map(LogLevel logLevel)
+        {
+            switch (logLevel)
+            {
+                case Microsoft.Extensions.Logging.LogLevel.Debug:
+                    return LogEventLevel.Debug;
+                    
+                case Microsoft.Extensions.Logging.LogLevel.Trace:
+                    return LogEventLevel.Verbose;
+                    
+                case Microsoft.Extensions.Logging.LogLevel.Information:
+                    return LogEventLevel.Information;
+                
+                case Microsoft.Extensions.Logging.LogLevel.Warning:
+                    return LogEventLevel.Warning;
+                
+                case Microsoft.Extensions.Logging.LogLevel.Error:
+                    return LogEventLevel.Error;
+                
+                case Microsoft.Extensions.Logging.LogLevel.Critical:
+                    return LogEventLevel.Fatal;
+                
+                default:
+                    return LogEventLevel.Information;
+            }
+        }
+
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
+        {
+            return true;
+        }
+
+        public IDisposable BeginScope(string scopeMessage)
+        {
+            return new DummyDisposableObject();
+        }
+
+        private class DummyDisposableObject : IDisposable
+        {
+            public void Dispose()
+            {
+                
+            }
+        }
+
         public async Task WriteInfoAsync(string component, string process, string context, string info, DateTime? dateTime = null)
         {
             await WriteLog(LogEventLevel.Information, component, process, context, info, null, dateTime);
