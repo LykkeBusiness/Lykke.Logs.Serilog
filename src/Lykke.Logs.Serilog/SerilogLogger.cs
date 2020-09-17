@@ -151,13 +151,13 @@ namespace Lykke.Logs.Serilog
 
         public async Task WriteErrorAsync(string component, string process, string context, Exception exception, DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Error, component, process, context, exception.Message, exception, dateTime);
+            await WriteLog(LogEventLevel.Error, component, process, context, exception?.Message, exception, dateTime);
         }
 
         public async Task WriteFatalErrorAsync(string component, string process, string context, Exception exception,
             DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Fatal, component, process, context, exception.Message, exception, dateTime);
+            await WriteLog(LogEventLevel.Fatal, component, process, context, exception?.Message, exception, dateTime);
         }
 
         public async Task WriteInfoAsync(string process, string context, string info, DateTime? dateTime = null)
@@ -182,12 +182,12 @@ namespace Lykke.Logs.Serilog
 
         public async Task WriteErrorAsync(string process, string context, Exception exception, DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Error, string.Empty, process, context, exception.Message, exception, dateTime);
+            await WriteLog(LogEventLevel.Error, string.Empty, process, context, exception?.Message, exception, dateTime);
         }
 
         public async Task WriteFatalErrorAsync(string process, string context, Exception exception, DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Fatal, string.Empty, process, context, exception.Message, exception, dateTime);
+            await WriteLog(LogEventLevel.Fatal, string.Empty, process, context, exception?.Message, exception, dateTime);
         }
     }
 }
