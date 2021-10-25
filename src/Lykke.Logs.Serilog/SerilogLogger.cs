@@ -39,6 +39,19 @@ namespace Lykke.Logs.Serilog
 
         public SerilogLogger(Assembly assembly, IConfiguration configuration,
             IEnumerable<Func<(string Name, object Value)>> enrichers)
+            : this(assembly, configuration, enrichers, new List<ILogEventEnricher>())
+        {
+        }
+
+        public SerilogLogger(Assembly assembly, IConfiguration configuration,
+            IEnumerable<ILogEventEnricher> logEventEnrichers)
+            : this(assembly, configuration, new List<Func<(string Name, object Value)>>(), logEventEnrichers)
+        {
+        }
+
+        public SerilogLogger(Assembly assembly, IConfiguration configuration,
+            IEnumerable<Func<(string Name, object Value)>> enrichers,
+            IEnumerable<ILogEventEnricher> logEventEnrichers)
         {
             var title = assembly.Attribute<AssemblyTitleAttribute>(attribute => attribute.Title);
             var version =
@@ -56,6 +69,11 @@ namespace Lykke.Logs.Serilog
             {
                 var (name, value) = enricher();
                 loggerConfiguration = loggerConfiguration.Enrich.WithProperty(name, value);
+            }
+
+            foreach (var enricher in logEventEnrichers ?? new List<ILogEventEnricher>())
+            {
+                loggerConfiguration = loggerConfiguration.Enrich.With(enricher);
             }
 
             _logger = loggerConfiguration.CreateLogger();
