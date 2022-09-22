@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
-using JetBrains.Annotations;
 using Lykke.Common;
 using Lykke.Common.Log;
 using Microsoft.Extensions.Configuration;
@@ -22,8 +20,7 @@ namespace Lykke.Logs.Serilog
     /// ILog wrapper to write to files. Hides Serilog implementation behind.
     /// Serilog must be configured with appsettings.Serilog.json.
     /// </summary>
-    //TODO: to refactor and use new logs mechanism
-    [UsedImplicitly]
+    // TODO: to refactor and use new logs mechanism
     public class SerilogLogger : ILog
     {
         private readonly Logger _logger;
@@ -83,8 +80,7 @@ namespace Lykke.Logs.Serilog
             WriteLog(LogEventLevel.Information, title, version, environmentName, "Started logging.");
         }
 
-        private Task WriteLog(LogEventLevel level, string component, string process, string context, string info,
-            Exception ex = null, DateTime? dateTime = null)
+        private Task WriteLog(LogEventLevel level, string component, string process, string context, string info, Exception ex = null)
         {
             void Write()
             {
@@ -113,7 +109,7 @@ namespace Lykke.Logs.Serilog
             return Task.CompletedTask;
         }
 
-        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, EventId eventId, TState state,
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
             Exception exception, Func<TState, Exception, string> formatter) where TState : LogEntryParameters
         {
             WriteLog(Map(logLevel), "", "", state.ToJson(), formatter(state, exception), exception);
@@ -123,22 +119,22 @@ namespace Lykke.Logs.Serilog
         {
             switch (logLevel)
             {
-                case Microsoft.Extensions.Logging.LogLevel.Debug:
+                case LogLevel.Debug:
                     return LogEventLevel.Debug;
 
-                case Microsoft.Extensions.Logging.LogLevel.Trace:
+                case LogLevel.Trace:
                     return LogEventLevel.Verbose;
 
-                case Microsoft.Extensions.Logging.LogLevel.Information:
+                case LogLevel.Information:
                     return LogEventLevel.Information;
 
-                case Microsoft.Extensions.Logging.LogLevel.Warning:
+                case LogLevel.Warning:
                     return LogEventLevel.Warning;
 
-                case Microsoft.Extensions.Logging.LogLevel.Error:
+                case LogLevel.Error:
                     return LogEventLevel.Error;
 
-                case Microsoft.Extensions.Logging.LogLevel.Critical:
+                case LogLevel.Critical:
                     return LogEventLevel.Fatal;
 
                 default:
@@ -146,7 +142,7 @@ namespace Lykke.Logs.Serilog
             }
         }
 
-        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
+        public bool IsEnabled(LogLevel logLevel)
         {
             return true;
         }
@@ -156,82 +152,81 @@ namespace Lykke.Logs.Serilog
             return new DummyDisposableObject();
         }
 
-        private class DummyDisposableObject : IDisposable
+        private sealed class DummyDisposableObject : IDisposable
         {
             public void Dispose()
             {
+                // does nothing
             }
         }
 
         public async Task WriteInfoAsync(string component, string process, string context, string info,
             DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Information, component, process, context, info, null, dateTime);
+            await WriteLog(LogEventLevel.Information, component, process, context, info);
         }
 
         public async Task WriteMonitorAsync(string component, string process, string context, string info,
             DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Verbose, component, process, context, info, null, dateTime);
+            await WriteLog(LogEventLevel.Verbose, component, process, context, info);
         }
 
         public async Task WriteWarningAsync(string component, string process, string context, string info,
             DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Warning, component, process, context, info, null, dateTime);
+            await WriteLog(LogEventLevel.Warning, component, process, context, info);
         }
 
         public async Task WriteWarningAsync(string component, string process, string context, string info, Exception ex,
             DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Warning, component, process, context, info, ex, dateTime);
+            await WriteLog(LogEventLevel.Warning, component, process, context, info, ex);
         }
 
         public async Task WriteErrorAsync(string component, string process, string context, Exception exception,
             DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Error, component, process, context, exception?.Message, exception, dateTime);
+            await WriteLog(LogEventLevel.Error, component, process, context, exception?.Message, exception);
         }
 
         public async Task WriteFatalErrorAsync(string component, string process, string context, Exception exception,
             DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Fatal, component, process, context, exception?.Message, exception, dateTime);
+            await WriteLog(LogEventLevel.Fatal, component, process, context, exception?.Message, exception);
         }
 
         public async Task WriteInfoAsync(string process, string context, string info, DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Information, string.Empty, process, context, info, null, dateTime);
+            await WriteLog(LogEventLevel.Information, string.Empty, process, context, info);
         }
 
         public async Task WriteMonitorAsync(string process, string context, string info, DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Verbose, string.Empty, process, context, info, null, dateTime);
+            await WriteLog(LogEventLevel.Verbose, string.Empty, process, context, info);
         }
 
         public async Task WriteWarningAsync(string process, string context, string info, DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Warning, string.Empty, process, context, info, null, dateTime);
+            await WriteLog(LogEventLevel.Warning, string.Empty, process, context, info);
         }
 
         public async Task WriteWarningAsync(string process, string context, string info, Exception ex,
             DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Warning, string.Empty, process, context, info, ex, dateTime);
+            await WriteLog(LogEventLevel.Warning, string.Empty, process, context, info, ex);
         }
 
         public async Task WriteErrorAsync(string process, string context, Exception exception,
             DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Error, string.Empty, process, context, exception?.Message, exception,
-                dateTime);
+            await WriteLog(LogEventLevel.Error, string.Empty, process, context, exception?.Message, exception);
         }
 
         public async Task WriteFatalErrorAsync(string process, string context, Exception exception,
             DateTime? dateTime = null)
         {
-            await WriteLog(LogEventLevel.Fatal, string.Empty, process, context, exception?.Message, exception,
-                dateTime);
+            await WriteLog(LogEventLevel.Fatal, string.Empty, process, context, exception?.Message, exception);
         }
     }
 }

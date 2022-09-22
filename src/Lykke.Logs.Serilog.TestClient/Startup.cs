@@ -3,23 +3,21 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Lykke.Logs.Serilog.TestClient
 {
     public class Startup
     {
-        public IConfigurationRoot Configuration { get; }
-        public IHostingEnvironment Environment { get; }
+        private IConfigurationRoot Configuration { get; }
         
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             Configuration = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddSerilogJson(env)
                 .AddEnvironmentVariables()
                 .Build();
-
-            Environment = env;
         }
         
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -30,7 +28,7 @@ namespace Lykke.Logs.Serilog.TestClient
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
