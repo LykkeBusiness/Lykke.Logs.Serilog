@@ -13,11 +13,11 @@ public static class LoggerConfigurationExtensions
     /// <param name="configuration"></param>
     /// <param name="testEnvironmentName">The test environment name</param>
     /// <returns></returns>
-    public static ILogger CreateLogger(this LoggerConfiguration configuration, string testEnvironmentName = "Testing")
+    public static ILogger CreateLogger(this LoggerConfiguration configuration, string testEnvironmentName = "test")
     {
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
         
-        if (env == testEnvironmentName)
+        if (testEnvironmentName.Equals(env, StringComparison.InvariantCultureIgnoreCase))
             return configuration.CreateLogger();
 
         return configuration.CreateBootstrapLogger();

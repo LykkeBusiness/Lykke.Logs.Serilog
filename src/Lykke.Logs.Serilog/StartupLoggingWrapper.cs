@@ -9,7 +9,7 @@ namespace Lykke.Logs.Serilog
 {
     public static class StartupLoggingWrapper
     {
-        public static async Task HandleStartupException(Func<Task> startup, [CanBeNull] string serviceShortName, string testEnvironmentName = "Testing")
+        public static async Task HandleStartupException(Func<Task> startup, [CanBeNull] string serviceShortName, string testEnvironmentName = "test")
         {
             var entryAssemblyName = Assembly.GetEntryAssembly()?.GetName() ?? new AssemblyName("Unknown");
             serviceShortName = serviceShortName ?? entryAssemblyName.Name;
