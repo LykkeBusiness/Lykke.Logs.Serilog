@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <PackageId>LykkeBiz.Logs.Serilog</PackageId>
-    <Version>3.3.2</Version>
+    <Version>3.3.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
